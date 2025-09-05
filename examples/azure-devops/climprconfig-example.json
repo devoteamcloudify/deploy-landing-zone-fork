@@ -1,0 +1,92 @@
+{
+  "lzManagement": {
+    "gitWorkloadRepository": {
+      "defaultTeam": {
+        "enabled": true,
+        "teamNamePrefix": "LZ-",
+        "teamNameSuffix": "",
+        "teamNameIncludeLzName": true,
+        "lzGroupNamePrefix": "LZ-",
+        "lzGroupNameSuffix": "",
+        "lzGroupNameIncludeLzName": true,
+        "descriptionPrefix": "Landing Zone team for ",
+        "descriptionSuffix": "",
+        "descriptionIncludeLzName": true,
+        "permission": "write",
+        "syncWithEntraId": true
+      },
+      "access": {
+        "teams": {
+          "read": [],
+          "triage": [],
+          "write": [],
+          "maintain": [],
+          "admin": []
+        },
+        "collaborators": {
+          "read": [],
+          "triage": [],
+          "write": [],
+          "maintain": [],
+          "admin": []
+        }
+      },
+      "branchProtection": {
+        "required_status_checks": {
+          "strict": true,
+          "contexts": []
+        },
+        "enforce_admins": false,
+        "required_pull_request_reviews": {
+          "required_approving_review_count": 1,
+          "dismiss_stale_reviews": true,
+          "require_code_owner_reviews": false,
+          "restriction": null
+        },
+        "restrictions": null
+      },
+      "runProtection": "default",
+      "codeOwners": [
+        "* @platform-team"
+      ]
+    },
+    "azureDevOpsWorkloadRepository": {
+      "access": {
+        "teams": {
+          "contributor": ["platform-team"],
+          "reader": ["security-team"]
+        },
+        "users": {
+          "admin": ["admin@contoso.com"],
+          "contributor": [],
+          "reader": []
+        }
+      },
+      "branchPolicies": {
+        "requireReviewers": true,
+        "minimumReviewers": 1,
+        "requireBuildValidation": true,
+        "resetOnSourcePush": true,
+        "blockLastPusherVote": false,
+        "requiredReviewersPolicy": {
+          "minimumApproverCount": 1,
+          "creatorVoteCounts": false,
+          "allowDownvotes": false,
+          "resetOnSourcePush": true
+        },
+        "buildValidationPolicy": {
+          "isEnabled": true,
+          "validDuration": 720,
+          "isBlocking": true
+        }
+      },
+      "defaultPipelines": [
+        {
+          "name": "CI/CD",
+          "yamlPath": "azure-pipelines.yml",
+          "trigger": ["main"]
+        }
+      ]
+    }
+  }
+}

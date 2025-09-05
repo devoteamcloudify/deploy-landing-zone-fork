@@ -39,9 +39,10 @@ To use this action, you need to follow the steps below:
 4. Validate and update the `lz-management/climprconfig.json` configuration file to reflect your desired configuration.
 5. Create the archetypes you need and place them in the `lz-management/archetypes` directory.
 6. Create a GitHub app (TODO: Insert instructions)
-7. Create a User Assigned Managed Identity for the solution. (You can use the [Climpr Bicep Deployment module](https://github.com/climpr/deploy-bicep/) for this.)
-8. In GitHub, create the environment and upload the variables and secrets referenced in the `.github/workflows/deploy-landing-zones.yaml` file.
-9. You are good to go...
+7. For Azure DevOps integration, configure the Azure DevOps CLI and authentication (see [Azure DevOps Integration Guide](docs/azure-devops-integration.md))
+8. Create a User Assigned Managed Identity for the solution. (You can use the [Climpr Bicep Deployment module](https://github.com/climpr/deploy-bicep/) for this.)
+9. In GitHub, create the environment and upload the variables and secrets referenced in the `.github/workflows/deploy-landing-zones.yaml` file.
+10. You are good to go...
 
 ### How to use this action
 
@@ -49,8 +50,11 @@ This action can be used multiple ways.
 
 - Single Landing Zone deployment.
 - Part of a dynamic, multi-deployment strategy using the `matrix` capabilities in Github.
+- Supports both GitHub and Azure DevOps repository and pipeline management.
 
 It requires the repository to be checked out before use, and that the Github runner is logged in to the respective Azure environment.
+
+For Azure DevOps functionality, ensure the Azure DevOps CLI extension is installed and properly configured with authentication.
 
 It is called as a step like this:
 
@@ -138,3 +142,37 @@ Each Landing Zone has a dedicated directory under the desired root directory `lz
 A Landing Zone is defined by a file called: `metadata.json`. This file contains the definition of the Landing Zone, both GitHub properties and Azure properties.
 
 For any Landing Zone with an Azure environment, a `.bicepparam` file must be made for each environment. The file must be named: `<environment>.bicepparam`. For example: `prod.bicepparam`. The `.bicepparam` must be linked to the archetype `main.bicep` file with the `using` statement.
+
+## Azure DevOps Support
+
+This solution now includes comprehensive Azure DevOps integration alongside the existing GitHub functionality. You can use either platform or both simultaneously for different Landing Zones.
+
+### Azure DevOps Features
+
+- **Repository Management**: Create, configure, and manage Azure DevOps Git repositories
+- **Pipeline Automation**: Set up CI/CD pipelines from YAML definitions
+- **Permissions & Security**: Configure team and user access controls
+- **Branch Policies**: Enforce code review and build validation requirements
+- **Integration with Azure AD**: Leverage existing identity management
+
+### Configuration
+
+Add Azure DevOps settings to your Landing Zone `metadata.json`:
+
+```json
+{
+  "azureDevOps": {
+    "organization": "https://dev.azure.com/your-org",
+    "projectName": "your-project",
+    "repoName": "repository-name",
+    "pipelines": [
+      {
+        "name": "CI/CD Pipeline",
+        "yamlPath": "azure-pipelines.yml"
+      }
+    ]
+  }
+}
+```
+
+For detailed configuration options and examples, see the [Azure DevOps Integration Guide](docs/azure-devops-integration.md).

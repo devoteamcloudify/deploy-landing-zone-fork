@@ -1,0 +1,112 @@
+# Azure DevOps Example Pipeline
+# This is a basic example of a CI/CD pipeline for Azure DevOps
+
+trigger:
+  branches:
+    include:
+    - main
+    - develop
+  paths:
+    exclude:
+    - README.md
+    - docs/*
+
+pr:
+  branches:
+    include:
+    - main
+  paths:
+    exclude:
+    - README.md
+    - docs/*
+
+variables:
+  buildConfiguration: 'Release'
+  azureSubscription: 'your-service-connection'
+  resourceGroupName: 'rg-landing-zone'
+
+stages:
+- stage: Build
+  displayName: 'Build and Test'
+  jobs:
+  - job: Build
+    displayName: 'Build Job'
+    pool:
+      vmImage: 'ubuntu-latest'
+    
+    steps:
+    - task: AzureCLI@2
+      displayName: 'Azure CLI - Validate Bicep Templates'
+      inputs:
+        azureSubscription: $(azureSubscription)
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          echo "Validating Bicep templates..."
+          az bicep build --file main.bicep
+          echo "Bicep validation completed"
+
+    - task: PowerShell@2
+      displayName: 'Run PowerShell Tests'
+      inputs:
+        targetType: 'inline'
+        script: |
+          Write-Host "Running PowerShell tests..."
+          # Add your Pester tests here
+          Write-Host "Tests completed"
+
+- stage: Deploy_Dev
+  displayName: 'Deploy to Development'
+  dependsOn: Build
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/develop'))
+  jobs:
+  - deployment: DeployDev
+    displayName: 'Deploy to Dev Environment'
+    environment: 'development'
+    pool:
+      vmImage: 'ubuntu-latest'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: AzureCLI@2
+            displayName: 'Deploy to Development'
+            inputs:
+              azureSubscription: $(azureSubscription)
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                echo "Deploying to development environment..."
+                az deployment group create \
+                  --resource-group $(resourceGroupName)-dev \
+                  --template-file main.bicep \
+                  --parameters environment=dev
+                echo "Development deployment completed"
+
+- stage: Deploy_Prod
+  displayName: 'Deploy to Production'
+  dependsOn: Build
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+  jobs:
+  - deployment: DeployProd
+    displayName: 'Deploy to Production Environment'
+    environment: 'production'
+    pool:
+      vmImage: 'ubuntu-latest'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: AzureCLI@2
+            displayName: 'Deploy to Production'
+            inputs:
+              azureSubscription: $(azureSubscription)
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                echo "Deploying to production environment..."
+                az deployment group create \
+                  --resource-group $(resourceGroupName)-prod \
+                  --template-file main.bicep \
+                  --parameters environment=prod
+                echo "Production deployment completed"

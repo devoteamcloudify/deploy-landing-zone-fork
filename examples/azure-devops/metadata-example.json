@@ -1,0 +1,65 @@
+{
+  "organization": "contoso-github",
+  "repoName": "my-application-lz",
+  "repoDescription": "Application Landing Zone for My Application",
+  "defaultBranch": "main",
+  "azureDevOps": {
+    "organization": "https://dev.azure.com/contoso",
+    "projectName": "landing-zones",
+    "repoName": "my-application-lz-ado",
+    "defaultBranch": "main",
+    "access": {
+      "teams": {
+        "contributor": ["app-team", "platform-team"],
+        "reader": ["security-team", "compliance-team"]
+      },
+      "users": {
+        "admin": ["admin@contoso.com"],
+        "contributor": ["developer1@contoso.com", "developer2@contoso.com"]
+      }
+    },
+    "branchPolicies": {
+      "requireReviewers": true,
+      "minimumReviewers": 2,
+      "requireBuildValidation": true,
+      "resetOnSourcePush": true,
+      "blockLastPusherVote": true
+    },
+    "pipelines": [
+      {
+        "name": "CI Pipeline",
+        "yamlPath": "pipelines/ci.yml",
+        "decommissioned": false
+      },
+      {
+        "name": "CD Pipeline",
+        "yamlPath": "pipelines/cd.yml",
+        "decommissioned": false
+      }
+    ],
+    "buildValidation": [
+      {
+        "name": "Build Validation",
+        "displayName": "Build must pass",
+        "path": "/",
+        "isBlocking": true,
+        "validDuration": 720
+      }
+    ]
+  },
+  "environments": [
+    {
+      "name": "development",
+      "decommissioned": false
+    },
+    {
+      "name": "staging", 
+      "decommissioned": false
+    },
+    {
+      "name": "production",
+      "decommissioned": false
+    }
+  ],
+  "decommissioned": false
+}
