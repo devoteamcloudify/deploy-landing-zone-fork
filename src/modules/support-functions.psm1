@@ -95,3 +95,127 @@ function Join-Arrays {
 
     $Array2
 }
+
+function Invoke-AzureDevOpsCliApiMethod {
+    [CmdletBinding()]
+    param (
+        [string]
+        $Uri,
+
+        [string]
+        $Method,
+
+        [string]
+        $Body,
+
+        [string]
+        $Organization,
+
+        [string]
+        $Project
+    )
+    
+    $args = @()
+    $args += "devops"
+    $args += "invoke"
+    $args += "--area"
+    $args += ($Uri -split '/')[1]
+    $args += "--resource"
+    $args += ($Uri -split '/')[2]
+    
+    if ($Organization) {
+        $args += "--organization"
+        $args += $Organization
+    }
+    
+    if ($Project) {
+        $args += "--project"
+        $args += $Project
+    }
+    
+    $args += "--http-method"
+    $args += $Method
+    
+    if ($Body -and $Method -ne "GET") {
+        $args += "--in-file"
+        $args += "-"
+    }
+    
+    try {
+        if ($Body -and $Method -ne "GET") {
+            $response = $Body | & az @args
+        }
+        else {
+            $response = & az @args
+        }
+        
+        if ($LASTEXITCODE -eq 0) {
+            return ($response | ConvertFrom-Json)
+        }
+        else {
+            throw "Azure DevOps CLI command failed with exit code $LASTEXITCODE"
+        }
+    }
+    catch {
+        throw "Failed to execute Azure DevOps CLI command: $($_.Exception.Message)"
+    }
+}
+
+function Invoke-AzureDevOpsCliCommand {
+    [CmdletBinding()]
+    param (
+        [string[]]
+        $Command,
+
+        [string]
+        $Organization,
+
+        [string]
+        $Project,
+
+        [hashtable]
+        $Parameters = @{}
+    )
+    
+    $args = @("devops") + $Command
+    
+    if ($Organization) {
+        $args += "--organization"
+        $args += $Organization
+    }
+    
+    if ($Project) {
+        $args += "--project"
+        $args += $Project
+    }
+    
+    foreach ($key in $Parameters.Keys) {
+        $args += "--$key"
+        if ($Parameters[$key] -ne $null -and $Parameters[$key] -ne "") {
+            $args += $Parameters[$key]
+        }
+    }
+    
+    try {
+        $response = & az @args
+        
+        if ($LASTEXITCODE -eq 0) {
+            if ($response) {
+                try {
+                    return ($response | ConvertFrom-Json)
+                }
+                catch {
+                    # If conversion fails, return raw response
+                    return $response
+                }
+            }
+            return $null
+        }
+        else {
+            throw "Azure DevOps CLI command failed with exit code $LASTEXITCODE. Response: $response"
+        }
+    }
+    catch {
+        throw "Failed to execute Azure DevOps CLI command: $($_.Exception.Message)"
+    }
+}

@@ -126,6 +126,17 @@ runs:
 
           echo "::endgroup::"
 
+          #* Deploy-AzureDevOpsRepository.ps1
+          echo "::group::Deploy-AzureDevOpsRepository"
+
+          $param = @{
+            LandingZonePath = $env:landingZonePath
+            SolutionPath    = $env:solutionPath
+          }
+          & "$($env:actionPath)/src/Deploy-AzureDevOpsRepository.ps1" @param
+
+          echo "::endgroup::"
+
           #* Deploy-AzureLandingZone.ps1
           echo "::group::Deploy-AzureLandingZone"
 
@@ -158,6 +169,17 @@ runs:
             SolutionPath                   = $env:solutionPath
           }
           & "$($env:actionPath)/src/Remove-GitHubRepository.ps1" @param
+
+          echo "::endgroup::"
+
+          #* Remove-AzureDevOpsRepository.ps1
+          echo "::group::Remove-AzureDevOpsRepository"
+
+          $param = @{
+            LandingZonePath = $env:landingZonePath
+            SolutionPath    = $env:solutionPath
+          }
+          & "$($env:actionPath)/src/Remove-AzureDevOpsRepository.ps1" @param
 
           echo "::endgroup::"
 
